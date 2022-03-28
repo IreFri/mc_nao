@@ -1,13 +1,19 @@
 #include <mc_nao/nao.h>
 #include <mc_nao/config.h>
+
+#include <RBDyn/parsers/urdf.h>
+
 #include <fstream>
+
+#include <boost/filesystem.hpp>
+namespace bfs = boost::filesystem;
 
 namespace mc_robots
 {
 NAOCommonRobotModule::NAOCommonRobotModule()
     : RobotModule(mc_rtc::NAO_DESCRIPTION_PATH, "nao")
 {
-  LOG_INFO("Loading NAO from: " << mc_rtc::NAO_DESCRIPTION_PATH);
+  mc_rtc::log::info("Loading NAO from {}", mc_rtc::NAO_DESCRIPTION_PATH);
   rsdf_dir = path + "/rsdf";
   calib_dir = path + "/calib";
 
@@ -132,13 +138,10 @@ NAOCommonRobotModule::NAOCommonRobotModule()
   // _springs.springsBodies = {"l_ankle", "r_ankle"};  //TODO: check these are the correct bodies
   _springs.springsBodies = {};  //TODO: check these are the correct bodies
 
-  _ref_joint_order = {
-      "HeadPitch", "HeadYaw", "LAnklePitch", "LAnkleRoll", "LElbowRoll", "LElbowYaw", "LHand", "LHipPitch", "LHipRoll", "LHipYawPitch", "LKneePitch", "LShoulderPitch", "LShoulderRoll", "LWristYaw", "RAnklePitch", "RAnkleRoll", "RElbowRoll", "RElbowYaw", "RHand", "RHipPitch", "RHipRoll", "RKneePitch", "RShoulderPitch", "RShoulderRoll", "RWristYaw"};
-
   // Posture of base link in half-sitting for when no attitude is available.
   // (quaternion, translation)
   _default_attitude = {{1., 0., 0., 0., -0.00336301, 0.0127557, 0.332674}};
-  LOG_SUCCESS("NAOCommonRobotModule initialized");
+  mc_rtc::log::success("NAOCommonRobotModule initialized");
 }
 
 std::map<std::string, std::pair<std::string, std::string>> NAOCommonRobotModule::getConvexHull(const std::map<std::string, std::pair<std::string, std::string>>& files) const
@@ -155,25 +158,14 @@ std::map<std::string, std::pair<std::string, std::string>> NAOCommonRobotModule:
 void NAOCommonRobotModule::readUrdf(const std::string& robotName, const std::vector<std::string>& filteredLinks)
 {
   std::string urdfPath = path + "/urdf/" + robotName + ".urdf";
-  std::ifstream ifs(urdfPath);
-  if (ifs.is_open())
+  if(!bfs::exists(urdfPath))
   {
-    std::stringstream urdf;
-    urdf << ifs.rdbuf();
-    mc_rbdyn_urdf::URDFParserResult res = mc_rbdyn_urdf::rbdyn_from_urdf(urdf.str(), false, filteredLinks, true, "base_link");
-    mb = res.mb;
-    mbc = res.mbc;
-    mbg = res.mbg;
-    limits = res.limits;
+    mc_rtc::log::error_and_throw("Could not open NAO model at {}", urdfPath);
+  }
+  init(rbd::parsers::from_urdf_file(urdfPath, false, filteredLinks, true, "base_link"));
+  _ref_joint_order = {
+      "HeadPitch", "HeadYaw", "LAnklePitch", "LAnkleRoll", "LElbowRoll", "LElbowYaw", "LHand", "LHipPitch", "LHipRoll", "LHipYawPitch", "LKneePitch", "LShoulderPitch", "LShoulderRoll", "LWristYaw", "RAnklePitch", "RAnkleRoll", "RElbowRoll", "RElbowYaw", "RHand", "RHipPitch", "RHipRoll", "RKneePitch", "RShoulderPitch", "RShoulderRoll", "RWristYaw"};
 
-    _visual = res.visual;
-    _collisionTransforms = res.collision_tf;
-  }
-  else
-  {
-    LOG_ERROR("Could not open NAO model at " << urdfPath)
-    throw("Failed to open NAO model");
-  }
 }
 
 std::map<std::string, std::vector<double>> NAOCommonRobotModule::halfSittingPose(const rbd::MultiBody& mb) const
@@ -191,41 +183,9 @@ std::map<std::string, std::vector<double>> NAOCommonRobotModule::halfSittingPose
     }
     else if (j.name() != "Root" && j.dof() > 0)
     {
-      LOG_WARNING("Joint " << j.name() << " has " << j.dof() << " dof, but is not part of half sitting posture.");
+      mc_rtc::log::warning("Joint {} has {} dof but is not part of the half sitting posture", j.name(), j.dof());
     }
   }
-  return res;
-}
-
-std::vector<std::map<std::string, std::vector<double>>> NAOCommonRobotModule::nominalBounds(const mc_rbdyn_urdf::Limits& limits) const
-{
-  std::vector<std::map<std::string, std::vector<double>>> res(0);
-  res.push_back(limits.lower);
-  res.push_back(limits.upper);
-  {
-    auto mvelocity = limits.velocity;
-    for (auto& mv : mvelocity)
-    {
-      for (auto& mvi : mv.second)
-      {
-        mvi = -mvi;
-      }
-    }
-    res.push_back(mvelocity);
-  }
-  res.push_back(limits.velocity);
-  {
-    auto mtorque = limits.torque;
-    for (auto& mt : mtorque)
-    {
-      for (auto& mti : mt.second)
-      {
-        mti = -mti;
-      }
-    }
-    res.push_back(mtorque);
-  }
-  res.push_back(limits.torque);
   return res;
 }
 
@@ -281,19 +241,17 @@ NAONoHandRobotModule::NAONoHandRobotModule() : NAOCommonRobotModule()
   }
   readUrdf("nao", filteredLinks);
   auto fileByBodyName = stdCollisionsFiles(mb);
-  _bounds = nominalBounds(limits);
   _stance = halfSittingPose(mb);
   _convexHull = getConvexHull(fileByBodyName);
-  LOG_SUCCESS("NOANoHandRobotModule intialized");
+  mc_rtc::log::success("NOANoHandRobotModule intialized");
 }
 
 NAOWithHandRobotModule::NAOWithHandRobotModule() : NAOCommonRobotModule()
 {
   readUrdf("nao", filteredLinks);
   auto fileByBodyName = stdCollisionsFiles(mb);
-  _bounds = nominalBounds(limits);
   _stance = halfSittingPose(mb);
   _convexHull = getConvexHull(fileByBodyName);
-  LOG_SUCCESS("NAOWithHandRobotModule initialized");
+  mc_rtc::log::success("NAOWithHandRobotModule initialized");
 }
 }
