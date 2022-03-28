@@ -1,0 +1,41 @@
+name: CI of mc_nao
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  schedule:
+    # Run on Sunday, Tuesday and Thursday nights
+    - cron: '0 23 * * 0,1,4'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Install mc_rtc
+      run: |
+        set -x
+        set -e
+        curl -1sLf 'https://dl.cloudsmith.io/public/mc-rtc/head/setup.deb.sh' | sudo -E bash
+        sudo apt-get install -qq libmc-rtc-dev
+    - name: Install mc_panda
+      uses: jrl-umi3218/github-actions/install-dependencies@master
+      with:
+        compiler: gcc
+        build-type: RelWithDebInfo
+        github: |
+          - path: jrl-umi3218/nao_description
+    - name: Build and test
+      uses: jrl-umi3218/github-actions/build-cmake-project@master
+      with:
+        compiler: gcc
+        build-type: RelWithDebInfo
