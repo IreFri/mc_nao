@@ -15,7 +15,7 @@ else()
   set(NAO_DESCRIPTION_PATH "${nao_description_INSTALL_PREFIX}")
 endif()
 
-message("NAO_DESCRIPTION_PATH: ${NAO_DESCRIPTION_PATH}")
+message(STATUS "NAO_DESCRIPTION_PATH: ${NAO_DESCRIPTION_PATH}")
 configure_file(include/mc_nao/config.h.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/include/mc_nao/config.h")
 
 add_robot(nao src/nao.cpp include/mc_nao/nao.h)
