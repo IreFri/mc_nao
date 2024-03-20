@@ -1,5 +1,5 @@
-#include <mc_nao/nao.h>
 #include <mc_nao/config.h>
+#include <mc_nao/nao.h>
 
 #include <RBDyn/parsers/urdf.h>
 
@@ -8,8 +8,7 @@ namespace bfs = boost::filesystem;
 
 namespace mc_robots
 {
-NAOCommonRobotModule::NAOCommonRobotModule()
-    : RobotModule(mc_rtc::NAO_DESCRIPTION_PATH, "nao")
+NAOCommonRobotModule::NAOCommonRobotModule() : RobotModule(mc_rtc::NAO_DESCRIPTION_PATH, "nao")
 {
   mc_rtc::log::info("Loading NAO from {}", mc_rtc::NAO_DESCRIPTION_PATH);
   rsdf_dir = path + "/rsdf";
@@ -88,16 +87,24 @@ NAOCommonRobotModule::NAOCommonRobotModule()
   // Foot force sensors.
 
   auto createForceSensors = [this](const std::string & prefix, const std::string & prefixL, const std::string & link,
-      double DX_FL, double DY_FL, double DX_FR, double DY_FR, double DX_RL, double DY_RL, double DX_RR, double DY_RR)
+                                   double DX_FL, double DY_FL, double DX_FR, double DY_FR, double DX_RL, double DY_RL,
+                                   double DX_RR, double DY_RR)
   {
     constexpr double ankleZ = -0.04511;
-    _forceSensors.push_back(mc_rbdyn::ForceSensor(prefix + "srFR", link, sva::PTransformd(Eigen::Vector3d(DX_FR, DY_FR, ankleZ))));
-    _forceSensors.push_back(mc_rbdyn::ForceSensor(prefix + "srRR", link, sva::PTransformd(Eigen::Vector3d(DX_RR, DY_RR, ankleZ))));
-    _forceSensors.push_back(mc_rbdyn::ForceSensor(prefix + "srFL", link, sva::PTransformd(Eigen::Vector3d(DX_FL, DY_FL, ankleZ))));
-    _forceSensors.push_back(mc_rbdyn::ForceSensor(prefix + "srRL", link, sva::PTransformd(Eigen::Vector3d(DX_RL, DY_RL, ankleZ))));
-    _forceSensors.push_back(mc_rbdyn::ForceSensor("LF_TOTAL_WEIGHT", link, sva::PTransformd(Eigen::Vector3d(0, 0, ankleZ))));
-    // TODO: Write an observer to convert the pressure sensor measurements above to a wrench in the virtual Left/RightFootForceSensor
-    _forceSensors.push_back(mc_rbdyn::ForceSensor(prefixL + "FootForceSensor", link, sva::PTransformd(Eigen::Vector3d(0, 0, ankleZ))));
+    _forceSensors.push_back(
+        mc_rbdyn::ForceSensor(prefix + "srFR", link, sva::PTransformd(Eigen::Vector3d(DX_FR, DY_FR, ankleZ))));
+    _forceSensors.push_back(
+        mc_rbdyn::ForceSensor(prefix + "srRR", link, sva::PTransformd(Eigen::Vector3d(DX_RR, DY_RR, ankleZ))));
+    _forceSensors.push_back(
+        mc_rbdyn::ForceSensor(prefix + "srFL", link, sva::PTransformd(Eigen::Vector3d(DX_FL, DY_FL, ankleZ))));
+    _forceSensors.push_back(
+        mc_rbdyn::ForceSensor(prefix + "srRL", link, sva::PTransformd(Eigen::Vector3d(DX_RL, DY_RL, ankleZ))));
+    _forceSensors.push_back(
+        mc_rbdyn::ForceSensor("LF_TOTAL_WEIGHT", link, sva::PTransformd(Eigen::Vector3d(0, 0, ankleZ))));
+    // TODO: Write an observer to convert the pressure sensor measurements above to a wrench in the virtual
+    // Left/RightFootForceSensor
+    _forceSensors.push_back(
+        mc_rbdyn::ForceSensor(prefixL + "FootForceSensor", link, sva::PTransformd(Eigen::Vector3d(0, 0, ankleZ))));
   };
 
   auto LF_DX_FL = 0.07025;
@@ -108,7 +115,8 @@ NAOCommonRobotModule::NAOCommonRobotModule()
   auto LF_DY_RL = 0.0299;
   auto LF_DX_RR = -0.02965;
   auto LF_DY_RR = -0.0191;
-  createForceSensors("LF", "Left", "l_ankle", LF_DX_FL, LF_DY_FL, LF_DX_FR, LF_DY_FR, LF_DX_RL, LF_DY_RL, LF_DX_RR, LF_DY_RR);
+  createForceSensors("LF", "Left", "l_ankle", LF_DX_FL, LF_DY_FL, LF_DX_FR, LF_DY_FR, LF_DX_RL, LF_DY_RL, LF_DX_RR,
+                     LF_DY_RR);
 
   auto RF_DX_FL = 0.07025;
   auto RF_DY_FL = 0.0231;
@@ -118,13 +126,12 @@ NAOCommonRobotModule::NAOCommonRobotModule()
   auto RF_DY_RL = 0.0191;
   auto RF_DX_RR = -0.02965;
   auto RF_DY_RR = -0.0299;
-  createForceSensors("RF", "Right", "r_ankle", RF_DX_FL, RF_DY_FL, RF_DX_FR, RF_DY_FR, RF_DX_RL, RF_DY_RL, RF_DX_RR, RF_DY_RR);
+  createForceSensors("RF", "Right", "r_ankle", RF_DX_FL, RF_DY_FL, RF_DX_FR, RF_DY_FR, RF_DX_RL, RF_DY_RL, RF_DX_RR,
+                     RF_DY_RR);
 
   _minimalSelfCollisions = {
-      mc_rbdyn::Collision("Head", "l_wrist", 0.02, 0.01, 0.),
-      mc_rbdyn::Collision("Head", "r_wrist", 0.02, 0.01, 0.),
-      mc_rbdyn::Collision("Head", "LForeArm", 0.02, 0.01, 0.),
-      mc_rbdyn::Collision("Head", "RForeArm", 0.02, 0.01, 0.),
+      mc_rbdyn::Collision("Head", "l_wrist", 0.02, 0.01, 0.), mc_rbdyn::Collision("Head", "r_wrist", 0.02, 0.01, 0.),
+      mc_rbdyn::Collision("Head", "LForeArm", 0.02, 0.01, 0.), mc_rbdyn::Collision("Head", "RForeArm", 0.02, 0.01, 0.),
       // mc_rbdyn::Collision("Head", "LBicep", 0.02, 0.01, 0.),
       // mc_rbdyn::Collision("Head", "RBicep", 0.02, 0.01, 0.),
       mc_rbdyn::Collision("xtion_link", "l_wrist", 0.02, 0.02, 0.),
@@ -134,11 +141,9 @@ NAOCommonRobotModule::NAOCommonRobotModule()
       mc_rbdyn::Collision("LThigh", "l_wrist", 0.02, 0.01, 0.),
       mc_rbdyn::Collision("RThigh", "r_wrist", 0.02, 0.01, 0.),
       mc_rbdyn::Collision("l_wrist", "r_wrist", 0.02, 0.01, 0.),
-      mc_rbdyn::Collision("l_wrist", "torso", 0.02, 0.01, 0.),
-      mc_rbdyn::Collision("r_wrist", "torso", 0.02, 0.01, 0.),
+      mc_rbdyn::Collision("l_wrist", "torso", 0.02, 0.01, 0.), mc_rbdyn::Collision("r_wrist", "torso", 0.02, 0.01, 0.),
       mc_rbdyn::Collision("l_ankle", "r_ankle", 0.02, 0.01, 0.),
-      mc_rbdyn::Collision("l_ankle", "RTibia", 0.02, 0.01, 0.),
-      mc_rbdyn::Collision("r_ankle", "LTibia", 0.02, 0.01, 0.)
+      mc_rbdyn::Collision("l_ankle", "RTibia", 0.02, 0.01, 0.), mc_rbdyn::Collision("r_ankle", "LTibia", 0.02, 0.01, 0.)
       // mc_rbdyn::Collision("LThigh", "RThigh", 0.01, 0.001, 0.),
       // mc_rbdyn::Collision("LTibia", "RTibia", 0.01, 0.001, 0.)
   };
@@ -148,14 +153,13 @@ NAOCommonRobotModule::NAOCommonRobotModule()
   // Gripper's name,  Active joints in the gripper,
   // Whether the limits should be reversed, see mc_control::Gripper
   // _grippers = {};
-  _grippers =
-      {
-          {"l_gripper", {"LHand"}, false},
-          {"r_gripper", {"RHand"}, false},
-      };
+  _grippers = {
+      {"l_gripper", {"LHand"}, false},
+      {"r_gripper", {"RHand"}, false},
+  };
 
   // _springs.springsBodies = {"l_ankle", "r_ankle"};  //TODO: check these are the correct bodies
-  _springs.springsBodies = {};  //TODO: check these are the correct bodies
+  _springs.springsBodies = {}; // TODO: check these are the correct bodies
 
   // Posture of base link in half-sitting for when no attitude is available.
   // (quaternion, translation)
@@ -166,8 +170,9 @@ NAOCommonRobotModule::NAOCommonRobotModule()
   _lipmStabilizerConfig.rightFootSurface = "RightFootCenter";
   _lipmStabilizerConfig.torsoBodyName = "torso";
   _lipmStabilizerConfig.comHeight = 0.23;
-  _lipmStabilizerConfig.comActiveJoints = {"Root",
-      "LAnklePitch", "LAnkleRoll", "LHipPitch", "LHipRoll", "LHipYawPitch", "LKneePitch","RAnklePitch", "RAnkleRoll", "RHipPitch", "RHipRoll", "RKneePitch"};
+  _lipmStabilizerConfig.comActiveJoints = {"Root",       "LAnklePitch",  "LAnkleRoll", "LHipPitch",
+                                           "LHipRoll",   "LHipYawPitch", "LKneePitch", "RAnklePitch",
+                                           "RAnkleRoll", "RHipPitch",    "RHipRoll",   "RKneePitch"};
 
   _lipmStabilizerConfig.torsoPitch = 0;
   _lipmStabilizerConfig.copAdmittance = Eigen::Vector2d{0.01, 0.01};
@@ -180,18 +185,19 @@ NAOCommonRobotModule::NAOCommonRobotModule()
   mc_rtc::log::success("NAOCommonRobotModule initialized");
 }
 
-std::map<std::string, std::pair<std::string, std::string>> NAOCommonRobotModule::getConvexHull(const std::map<std::string, std::pair<std::string, std::string>>& files) const
+std::map<std::string, std::pair<std::string, std::string>> NAOCommonRobotModule::getConvexHull(
+    const std::map<std::string, std::pair<std::string, std::string>> & files) const
 {
   std::string convexPath = path + "/convex/";
   std::map<std::string, std::pair<std::string, std::string>> res;
-  for (const auto& f : files)
+  for(const auto & f : files)
   {
     res[f.first] = std::pair<std::string, std::string>(f.second.first, convexPath + f.second.second + "-ch.txt");
   }
   return res;
 }
 
-void NAOCommonRobotModule::readUrdf(const std::string& robotName, const std::vector<std::string>& filteredLinks)
+void NAOCommonRobotModule::readUrdf(const std::string & robotName, const std::vector<std::string> & filteredLinks)
 {
   std::string urdfPath = path + "/urdf/" + robotName + ".urdf";
   if(!bfs::exists(urdfPath))
@@ -199,25 +205,27 @@ void NAOCommonRobotModule::readUrdf(const std::string& robotName, const std::vec
     mc_rtc::log::error_and_throw("Could not open NAO model at {}", urdfPath);
   }
   init(rbd::parsers::from_urdf_file(urdfPath, false, filteredLinks, true, "base_link"));
-  _ref_joint_order = {
-      "HeadPitch", "HeadYaw", "LAnklePitch", "LAnkleRoll", "LElbowRoll", "LElbowYaw", "LHand", "LHipPitch", "LHipRoll", "LHipYawPitch", "LKneePitch", "LShoulderPitch", "LShoulderRoll", "LWristYaw", "RAnklePitch", "RAnkleRoll", "RElbowRoll", "RElbowYaw", "RHand", "RHipPitch", "RHipRoll", "RKneePitch", "RShoulderPitch", "RShoulderRoll", "RWristYaw"};
-
+  _ref_joint_order = {"HeadPitch",  "HeadYaw",        "LAnklePitch",    "LAnkleRoll",    "LElbowRoll",
+                      "LElbowYaw",  "LHand",          "LHipPitch",      "LHipRoll",      "LHipYawPitch",
+                      "LKneePitch", "LShoulderPitch", "LShoulderRoll",  "LWristYaw",     "RAnklePitch",
+                      "RAnkleRoll", "RElbowRoll",     "RElbowYaw",      "RHand",         "RHipPitch",
+                      "RHipRoll",   "RKneePitch",     "RShoulderPitch", "RShoulderRoll", "RWristYaw"};
 }
 
-std::map<std::string, std::vector<double>> NAOCommonRobotModule::halfSittingPose(const rbd::MultiBody& mb) const
+std::map<std::string, std::vector<double>> NAOCommonRobotModule::halfSittingPose(const rbd::MultiBody & mb) const
 {
   std::map<std::string, std::vector<double>> res;
-  for (const auto& j : mb.joints())
+  for(const auto & j : mb.joints())
   {
-    if (halfSitting.count(j.name()))
+    if(halfSitting.count(j.name()))
     {
       res[j.name()] = halfSitting.at(j.name());
-      for (auto& ji : res[j.name()])
+      for(auto & ji : res[j.name()])
       {
         ji = M_PI * ji / 180;
       }
     }
-    else if (j.name() != "Root" && j.dof() > 0)
+    else if(j.name() != "Root" && j.dof() > 0)
     {
       mc_rtc::log::warning("Joint {} has {} dof but is not part of the half sitting posture", j.name(), j.dof());
     }
@@ -225,14 +233,13 @@ std::map<std::string, std::vector<double>> NAOCommonRobotModule::halfSittingPose
   return res;
 }
 
-std::map<std::string, std::pair<std::string, std::string>> NAOCommonRobotModule::stdCollisionsFiles(const rbd::MultiBody& /*mb*/) const
+std::map<std::string, std::pair<std::string, std::string>> NAOCommonRobotModule::stdCollisionsFiles(
+    const rbd::MultiBody & /*mb*/) const
 {
   std::map<std::string, std::pair<std::string, std::string>> res;
 
   // Manually add all convex for bodies
-  auto addBody = [&res](const std::string& body, const std::string& file) {
-    res[body] = {body, file};
-  };
+  auto addBody = [&res](const std::string & body, const std::string & file) { res[body] = {body, file}; };
   // Add correspondance between link and corresponding CH name
   addBody("Head", "HeadPitch");
   addBody("xtion_link", "ASUS_XTION");
@@ -254,24 +261,24 @@ std::map<std::string, std::pair<std::string, std::string>> NAOCommonRobotModule:
   return res;
 }
 
-const std::map<std::string, std::pair<std::string, std::string>>& NAOCommonRobotModule::convexHull() const
+const std::map<std::string, std::pair<std::string, std::string>> & NAOCommonRobotModule::convexHull() const
 {
   return _convexHull;
 }
 
-const std::vector<std::map<std::string, std::vector<double>>>& NAOCommonRobotModule::bounds() const
+const std::vector<std::map<std::string, std::vector<double>>> & NAOCommonRobotModule::bounds() const
 {
   return _bounds;
 }
 
-const std::map<std::string, std::vector<double>>& NAOCommonRobotModule::stance() const
+const std::map<std::string, std::vector<double>> & NAOCommonRobotModule::stance() const
 {
   return _stance;
 }
 
 NAONoHandRobotModule::NAONoHandRobotModule() : NAOCommonRobotModule()
 {
-  for (const auto& gl : gripperLinks)
+  for(const auto & gl : gripperLinks)
   {
     filteredLinks.push_back(gl);
   }
@@ -291,4 +298,4 @@ NAOWithHandRobotModule::NAOWithHandRobotModule() : NAOCommonRobotModule()
   _convexHull = getConvexHull(fileByBodyName);
   mc_rtc::log::success("NAOWithHandRobotModule initialized");
 }
-}
+} // namespace mc_robots
