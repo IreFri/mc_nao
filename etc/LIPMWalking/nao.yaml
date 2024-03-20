@@ -143,6 +143,24 @@ ObserverPipelines:
   gui: true
   observers:
     - type: Encoder
+    - type: PressureForceSensor
+      name: PressureForceSensorLeft
+      required: false
+      config:
+          estimatedSensor: LeftFootForceSensor
+          pressureFrontLeft: LFsrFL
+          pressureFrontRight: LFsrFR
+          pressureRearLeft: LFsrRL
+          pressureRearRight: LFsrRR
+    - type: PressureForceSensor
+      name: PressureForceSensorRight
+      required: false
+      config:
+          estimatedSensor: RightFootForceSensor
+          pressureFrontLeft: RFsrFL
+          pressureFrontRight: RFsrFR
+          pressureRearLeft: RFsrRL
+          pressureRearRight: RFsrRR
     - type: Attitude
       required: false
     - type: KinematicInertial
