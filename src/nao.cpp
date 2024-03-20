@@ -45,16 +45,16 @@ NAOCommonRobotModule::NAOCommonRobotModule()
 
   halfSitting["LHipYawPitch"] = {0.0};
   halfSitting["LHipRoll"] = {0.0};
-  halfSitting["LHipPitch"] = {0.0};
-  halfSitting["LKneePitch"] = {0.0};
-  halfSitting["LAnklePitch"] = {0.0};
+  halfSitting["LHipPitch"] = {-18.551};
+  halfSitting["LKneePitch"] = {35.023};
+  halfSitting["LAnklePitch"] = {-16.418};
   halfSitting["LAnkleRoll"] = {0.0};
 
   halfSitting["RHipYawPitch"] = {0.0};
   halfSitting["RHipRoll"] = {0.0};
-  halfSitting["RHipPitch"] = {0.0};
-  halfSitting["RKneePitch"] = {0.0};
-  halfSitting["RAnklePitch"] = {0.0};
+  halfSitting["RHipPitch"] = {-18.551};
+  halfSitting["RKneePitch"] = {35.023};
+  halfSitting["RAnklePitch"] = {-16.418};
   halfSitting["RAnkleRoll"] = {0.0};
 
   halfSitting["LShoulderPitch"] = {1.49 * 180 / M_PI};
@@ -100,6 +100,9 @@ NAOCommonRobotModule::NAOCommonRobotModule()
   // XXX fix position
   _forceSensors.push_back(mc_rbdyn::ForceSensor("LF_TOTAL_WEIGHT", "l_ankle", sva::PTransformd(Eigen::Vector3d(0.07025, -0.0299, -0.04511))));
   _forceSensors.push_back(mc_rbdyn::ForceSensor("RF_TOTAL_WEIGHT", "r_ankle", sva::PTransformd(Eigen::Vector3d(0.07025, -0.0299, -0.04511))));
+  // TODO: Write an observer to convert the pressure sensor measurements above to a wrench in the virtual Left/RightFootForceSensor
+  _forceSensors.push_back(mc_rbdyn::ForceSensor("LeftFootForceSensor", "l_ankle", sva::PTransformd(Eigen::Vector3d(0.0, 0.0, -0.04511))));
+  _forceSensors.push_back(mc_rbdyn::ForceSensor("RightFootForceSensor", "l_ankle", sva::PTransformd(Eigen::Vector3d(0.0, 0.0, -0.04511))));
 
   _minimalSelfCollisions = {
       mc_rbdyn::Collision("Head", "l_wrist", 0.02, 0.01, 0.),
@@ -140,7 +143,24 @@ NAOCommonRobotModule::NAOCommonRobotModule()
 
   // Posture of base link in half-sitting for when no attitude is available.
   // (quaternion, translation)
-  _default_attitude = {{1., 0., 0., 0., -0.00336301, 0.0127557, 0.332674}};
+  _default_attitude = {{1., 0., 0., 0., -0.006, 0.01275, 0.32325}};
+
+  // TODO: Configure the stabilizer
+  _lipmStabilizerConfig.leftFootSurface = "LeftFootCenter";
+  _lipmStabilizerConfig.rightFootSurface = "RightFootCenter";
+  _lipmStabilizerConfig.torsoBodyName = "torso";
+  _lipmStabilizerConfig.comHeight = 0.23;
+  _lipmStabilizerConfig.comActiveJoints = {"Root",
+      "LAnklePitch", "LAnkleRoll", "LHipPitch", "LHipRoll", "LHipYawPitch", "LKneePitch","RAnklePitch", "RAnkleRoll", "RHipPitch", "RHipRoll", "RKneePitch"};
+
+  _lipmStabilizerConfig.torsoPitch = 0;
+  _lipmStabilizerConfig.copAdmittance = Eigen::Vector2d{0.01, 0.01};
+  _lipmStabilizerConfig.dcmPropGain = 5.0;
+  _lipmStabilizerConfig.dcmIntegralGain = 10;
+  _lipmStabilizerConfig.dcmDerivGain = 0.0;
+  _lipmStabilizerConfig.dcmDerivatorTimeConstant = 1;
+  _lipmStabilizerConfig.dcmIntegratorTimeConstant = 10;
+
   mc_rtc::log::success("NAOCommonRobotModule initialized");
 }
 
@@ -243,6 +263,7 @@ NAONoHandRobotModule::NAONoHandRobotModule() : NAOCommonRobotModule()
   auto fileByBodyName = stdCollisionsFiles(mb);
   _stance = halfSittingPose(mb);
   _convexHull = getConvexHull(fileByBodyName);
+
   mc_rtc::log::success("NOANoHandRobotModule intialized");
 }
 
