@@ -1,19 +1,11 @@
 cmake_minimum_required(VERSION 3.1)
 
 project(mc_nao)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
-find_package(nao_description REQUIRED)
 find_package(mc_rtc REQUIRED)
 
-if("${nao_description_INSTALL_PREFIX}" STREQUAL "")
-  if("${nao_description_SOURCE_PREFIX}" STREQUAL "")
-    message(FATAL_ERROR "Your nao_description package does not define where to find the data")
-  endif()
-  set(NAO_DESCRIPTION_PATH "${nao_description_SOURCE_PREFIX}")
-else()
-  set(NAO_DESCRIPTION_PATH "${nao_description_INSTALL_PREFIX}")
-endif()
+find_description_package(nao_description)
 
 message(STATUS "NAO_DESCRIPTION_PATH: ${NAO_DESCRIPTION_PATH}")
 configure_file(include/mc_nao/config.h.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/include/mc_nao/config.h")
