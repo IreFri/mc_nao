@@ -100,7 +100,7 @@ NAOCommonRobotModule::NAOCommonRobotModule() : RobotModule(mc_rtc::NAO_DESCRIPTI
     _forceSensors.push_back(
         mc_rbdyn::ForceSensor(prefix + "srRL", link, sva::PTransformd(Eigen::Vector3d(DX_RL, DY_RL, ankleZ))));
     _forceSensors.push_back(
-        mc_rbdyn::ForceSensor("LF_TOTAL_WEIGHT", link, sva::PTransformd(Eigen::Vector3d(0, 0, ankleZ))));
+        mc_rbdyn::ForceSensor(prefix + "_TOTAL_WEIGHT", link, sva::PTransformd(Eigen::Vector3d(0, 0, ankleZ))));
     // TODO: Write an observer to convert the pressure sensor measurements above to a wrench in the virtual
     // Left/RightFootForceSensor
     _forceSensors.push_back(
