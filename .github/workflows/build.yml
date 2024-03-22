@@ -15,7 +15,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-20.04]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -31,12 +31,7 @@ jobs:
       run: |
         set -x
         set -e
-        if [ "${{ matrix.os }}" = "ubuntu-18.04" ]
-        then
-          export ROS_DISTRO="melodic"
-        else
-          export ROS_DISTRO="noetic"
-        fi
+        export ROS_DISTRO="noetic"
         sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
         wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
         sudo apt-get update -qq
