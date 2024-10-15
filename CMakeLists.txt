@@ -15,8 +15,7 @@ add_robot(nao src/nao.cpp include/mc_nao/nao.h)
 target_include_directories(nao PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/include")
 target_include_directories(nao PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-install(FILES etc/LIPMWalking/nao.yaml
-        DESTINATION ${MC_CONTROLLER_RUNTIME_INSTALL_PREFIX}/LIPMWalking/)
+install(FILES etc/LIPMWalking/nao.yaml DESTINATION ${MC_CONTROLLER_RUNTIME_INSTALL_PREFIX}/LIPMWalking/)
 
 option(DISABLE_TESTS "Disable unit tests" OFF)
 if(NOT ${DISABLE_TESTS})

@@ -163,7 +163,8 @@ NAOCommonRobotModule::NAOCommonRobotModule() : RobotModule(mc_rtc::NAO_DESCRIPTI
 
   // Posture of base link in half-sitting for when no attitude is available.
   // (quaternion, translation)
-  _default_attitude = {{1., 0., 0., 0., -0.006, 0.01275, 0.32325}};
+  _default_attitude = {{1., 0., 0., 0., -0.006, 0.0, 0.32325}};
+  // _default_attitude = {{1., 0., 0., 0., -0.006, 0.01275, 0.3325}};
 
   // TODO: Configure the stabilizer
   _lipmStabilizerConfig.leftFootSurface = "LeftFootCenter";
@@ -205,11 +206,12 @@ void NAOCommonRobotModule::readUrdf(const std::string & robotName, const std::ve
     mc_rtc::log::error_and_throw("Could not open NAO model at {}", urdfPath);
   }
   init(rbd::parsers::from_urdf_file(urdfPath, false, filteredLinks, true, "base_link"));
-  _ref_joint_order = {"HeadPitch",  "HeadYaw",        "LAnklePitch",    "LAnkleRoll",    "LElbowRoll",
+_ref_joint_order = {"HeadPitch",  "HeadYaw",        "LAnklePitch",    "LAnkleRoll",    "LElbowRoll",
                       "LElbowYaw",  "LHand",          "LHipPitch",      "LHipRoll",      "LHipYawPitch",
                       "LKneePitch", "LShoulderPitch", "LShoulderRoll",  "LWristYaw",     "RAnklePitch",
                       "RAnkleRoll", "RElbowRoll",     "RElbowYaw",      "RHand",         "RHipPitch",
-                      "RHipRoll",   "RKneePitch",     "RShoulderPitch", "RShoulderRoll", "RWristYaw"};
+                      "RHipRoll",   "RHipYawPitch", "RKneePitch",     "RShoulderPitch", "RShoulderRoll", "RWristYaw"};
+
 }
 
 std::map<std::string, std::vector<double>> NAOCommonRobotModule::halfSittingPose(const rbd::MultiBody & mb) const
